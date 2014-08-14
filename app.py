@@ -5,7 +5,9 @@ from flask import Flask, url_for, request, session, redirect
 from moves import MovesClient
 
 
-app = Flask(__name__)
+# flask
+app             = Flask(__name__)
+app.secret_key  = os.environ['FLASK_APP_SECRET']
 
 # config vars
 client_id       = os.environ['CLIENT_ID']
@@ -72,23 +74,31 @@ def show_info():
         "<br /><a href=\"%s\">Logout</a>" % url_for('logout')
 
 
-@app.route("/today")
-def today():
-    today = datetime.now().strftime('%Y%m%d')
-    info = moves.user_summary_daily(today, access_token=session['access_token'])
+@app.route("/day/<yyyyMMdd>")
+def given_day(yyyyMMdd):
+    info = moves.user_summary_daily(yyyyMMdd, access_token=session['access_token'])
     res = ''
     if info[0]['summary'] is None:
         return res
-    for activity in info[0]['summary']:
-        if activity['activity'] == 'walking':
-            res += 'Walking: %d steps<br />' % activity['steps']
-        elif activity['activity'] == 'running':
-            res += 'Running: %d steps<br />' % activity['steps']
-        elif activity['activity'] == 'cycling':
-            res += 'Cycling: %dm' % activity['distance']
+    for group in info[0]['summary']:
+        if group['group'] == 'walking':
+            res += 'Walking: %d steps<br />' % group['steps']
+        elif group['group'] == 'running':
+            res += 'Running: %d steps<br />' % group['steps']
+        elif group['group'] == 'cycling':
+            res += 'Cycling: %d meters<br />' % group['distance']
+        elif group['group'] == 'transport':
+            res += 'Transport: %d meters<br />' % group['distance']
     return res
 
-app.secret_key = '\xfc$\xdd\xe9\x93\xc3s\x16\xca\x0e \xd6\x0e\xac\xa5\xdc\xe4B_I\x06\x1d\xf8d'
+
+@app.route("/today")
+def today():
+    today = datetime.now().strftime('%Y%m%d')
+    return given_day(today)
+    
+
+
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', debug=True)
