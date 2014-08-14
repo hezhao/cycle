@@ -7,7 +7,6 @@ __pycache__/
 
 # Heroku
 env/
-venv/
 .env
 
 # Distribution / packaging
