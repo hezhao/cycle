@@ -1,7 +1,7 @@
 import os
 from store import Store
 from datetime import datetime, timedelta
-from flask import Flask, url_for, request, session, redirect
+from flask import Flask, url_for, request, session, redirect, render_template
 from moves import MovesClient
 
 
@@ -18,7 +18,8 @@ redis_url       = os.environ['REDISTOGO_URL']
 moves           = MovesClient(client_id, client_secret)
 store           = Store(redis_url)
 
-@app.route("/")
+
+@app.route('/')
 def index():
     if 'access_token' not in session:
         oauth_return_url = url_for('oauth_return', _external=True)
@@ -27,16 +28,15 @@ def index():
             (auth_url, auth_url)
     return redirect(url_for('show_info'))
 
-@app.route("/myinfo")
-def myinfo():
-    profile = moves.user_profile(access_token=access_token)
-    response = 'User ID: %s<br />First day using Moves: %s' % \
-        (profile['userId'], profile['profile']['firstDate'])
-    return response + "<br /><a href=\"%s\">Info for today</a>" % url_for('today') + \
-        "<br /><a href=\"%s\">Logout</a>" % url_for('logout')
+@app.route('/home', methods=['POST'])
+def home():
+    firstname = request.form['firstname']
+    lastname  = request.form['lastname']
+    email     = request.form['email']
+    return '%s %s<br />%s' % (firstname, lastname, email)
 
 
-@app.route("/oauth_return")
+@app.route('/oauth_return')
 def oauth_return():
     error = request.values.get('error', None)
     if error is not None:
@@ -58,6 +58,12 @@ def oauth_return():
     return redirect(url_for('show_info'))
 
 
+@app.route('/register')
+def register():
+    '''Ask user to fill in name and email address'''
+    return app.send_static_file('register.html')
+
+
 @app.route('/logout')
 def logout():
     if 'access_token' in session:
@@ -65,7 +71,7 @@ def logout():
     return redirect(url_for('index'))
 
 
-@app.route("/info")
+@app.route('/info')
 def show_info():
     profile = moves.user_profile(access_token=session['access_token'])
     response = 'User ID: %s<br />First day using Moves: %s' % \
@@ -74,7 +80,7 @@ def show_info():
         "<br /><a href=\"%s\">Logout</a>" % url_for('logout')
 
 
-@app.route("/day/<yyyyMMdd>")
+@app.route('/day/<yyyyMMdd>')
 def given_day(yyyyMMdd):
     info = moves.user_summary_daily(yyyyMMdd, access_token=session['access_token'])
     res = ''
@@ -92,7 +98,7 @@ def given_day(yyyyMMdd):
     return res
 
 
-@app.route("/today")
+@app.route('/today')
 def today():
     today = datetime.now().strftime('%Y%m%d')
     return given_day(today)
@@ -100,5 +106,5 @@ def today():
 
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     app.run(host='0.0.0.0', debug=True)
