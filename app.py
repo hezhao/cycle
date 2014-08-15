@@ -18,22 +18,25 @@ redis_url       = os.environ['REDISTOGO_URL']
 moves           = MovesClient(client_id, client_secret)
 store           = Store(redis_url)
 
-
 @app.route('/')
 def index():
     if 'access_token' not in session:
-        oauth_return_url = url_for('oauth_return', _external=True)
-        auth_url = moves.build_oauth_url(oauth_return_url)
-        return 'Authorize this application: <a href="%s">%s</a>' % \
-            (auth_url, auth_url)
-    return redirect(url_for('show_info'))
+        return app.send_static_file('register.html')
+    return redirect(url_for('home'))
 
-@app.route('/home', methods=['POST'])
-def home():
-    firstname = request.form['firstname']
-    lastname  = request.form['lastname']
-    email     = request.form['email']
-    return '%s %s<br />%s' % (firstname, lastname, email)
+@app.route('/', methods=['POST'])
+def index_post():
+    '''
+    Return action from register page
+    TODO: validate name and email entries
+    '''
+    session['first_name']       = request.form['first_name']
+    session['last_name']        = request.form['last_name']
+    session['email_address']    = request.form['email_address']
+
+    oauth_return_url = url_for('oauth_return', _external=True)
+    auth_url = moves.build_oauth_url(oauth_return_url)
+    return redirect(auth_url)
 
 
 @app.route('/oauth_return')
@@ -49,19 +52,18 @@ def oauth_return():
     session['access_token'] = response['access_token']
     session['user_id'] = response['user_id']
 
-    # user:[user_id] = access_token
+    # HSET user:[user_id] access_token
+    # HSET user:[user_id] refresh_token
+    # HSET user:[user_id] first_name 
+    # HSET user:[user_id] last_name
+    # HSET user:[user_id] email
     store.set_access_token(session['user_id'], response['access_token'])
-
-    # user:[user_id] = refresh_token
     store.set_refresh_token(session['user_id'], response['refresh_token'])
+    store.set_first_name(session['user_id'], session['first_name'])
+    store.set_last_name(session['user_id'], session['last_name'])
+    store.set_email_address(session['user_id'], session['email_address'])
 
-    return redirect(url_for('show_info'))
-
-
-@app.route('/register')
-def register():
-    '''Ask user to fill in name and email address'''
-    return app.send_static_file('register.html')
+    return redirect(url_for('home'))
 
 
 @app.route('/logout')
@@ -71,13 +73,10 @@ def logout():
     return redirect(url_for('index'))
 
 
-@app.route('/info')
-def show_info():
+@app.route('/home')
+def home():
     profile = moves.user_profile(access_token=session['access_token'])
-    response = 'User ID: %s<br />First day using Moves: %s' % \
-        (profile['userId'], profile['profile']['firstDate'])
-    return response + "<br /><a href=\"%s\">Info for today</a>" % url_for('today') + \
-        "<br /><a href=\"%s\">Logout</a>" % url_for('logout')
+    return render_template('home.html', first_name = session['first_name'])
 
 
 @app.route('/day/<yyyyMMdd>')
@@ -103,8 +102,6 @@ def today():
     today = datetime.now().strftime('%Y%m%d')
     return given_day(today)
     
-
-
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', debug=True)

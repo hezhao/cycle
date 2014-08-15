@@ -20,20 +20,21 @@ class Store():
         return self.redis.hget('user:%d' % user_id, 'refresh_token')
 
     def set_first_name(self, user_id, first_name):
-        pass
+        return self.redis.hset('user:%d' % user_id, 'first_name', first_name)
 
     def get_first_name(self, user_id):
-        pass
+        return self.redis.hget('user_%d' % user_id, 'first_name')
 
     def set_last_name(self, user_id, last_name):
-        pass
+        return self.redis.hset('user:%d' % user_id, 'last_name', last_name)
 
     def get_last_name(self, user_id):
-        pass
+        return self.redis.hget('user:%d' % user_id, 'last_name')
 
     def set_email_address(self, user_id, email_address):
-        pass
+        print email_address
+        return self.redis.hset('user:%d' % user_id, 'email_address', email_address)
 
     def get_email_address(self, user_id):
-        pass
+        return self.redis.hget('user:%d' % user_id, 'email_address')
         
