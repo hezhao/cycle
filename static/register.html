@@ -2,6 +2,10 @@
     <head>
         <title>Register with W+K Cycle</title>
         <link rel=stylesheet type=text/css href="../static/style.css">
+        <script src='../static/js/jquery-1.11.1.min.js' />
+        <script src='../static/js/modernizr.custom.02011.js' />
+        <script src='../static/js/js-webshim/minified/polyfiller.js' />
+        <script>jQuery.webshims.polyfill('forms');</script>
     </head>
     <body>
         <div id="container">
@@ -9,14 +13,30 @@
                 <h1>Register with W+K Cycle</h1>
             </div>
             <div id="content">
-                <form method="post" action="/">
+
+                <form class="validate-form" method="post" action="/">
                   <label>Name</label>
-                  <input type="text" placeholder="First" name="first_name" />
-                  <input type="text" placeholder="Last" name="last_name" /> <br />
+                  <input type="text" placeholder="First" name="first_name" required />
+                  <input type="text" placeholder="Last" name="last_name" required /> <br />
                   <label>Email</label>
-                  <input type="text" size="47" name="email_address" /><br />
+                  <input type="email" size="47" name="email_address" required /><br />
                   <input type="submit" value="Register">
                 </form>
+                <script>
+                  function hasHtml5Validation () {
+                    return typeof document.createElement('input').checkValidity === 'function';
+                  }
+                  if (hasHtml5Validation()) {
+                    $('.validate-form').submit(function (e) {
+                      if (!this.checkValidity()) {
+                        e.preventDefault();
+                        $(this).addClass('invalid');
+                      } else {
+                        $(this).addClass('valid');
+                      }
+                    });
+                  }
+                </script>
             </div>
         </div>
     </body>
