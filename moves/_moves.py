@@ -23,13 +23,11 @@ class MovesClient(object):
     
     
     def __init__(self, client_id=None, client_secret=None,
-                 access_token=None, use_app=False):
+                 access_token=None):
 
         self.client_id = client_id
         self.client_secret = client_secret
         self.access_token = access_token
-        self.auth_url = self.app_auth_url if use_app else self.web_auth_uri
-        self.use_app = use_app
         self._last_headers = None
 
     def parse_response(self, response):
@@ -37,13 +35,12 @@ class MovesClient(object):
 
         return json.loads(response.text)
 
-    def build_oauth_url(self, redirect_uri=None, scope="activity location"):
+    def build_oauth_url(self, redirect_uri=None, use_app=False, scope="activity location"):
         params = {
             'client_id': self.client_id,
             'scope': scope
         }
-
-        if not self.use_app:
+        if not use_app:
             params['response_type'] = 'code'
 
         if redirect_uri:
@@ -51,6 +48,7 @@ class MovesClient(object):
 
         # Moves hates +s for spaces, so use %20 instead.
         encoded = urllib.urlencode(params).replace('+', '%20')
+        self.auth_url = self.app_auth_url if use_app else self.web_auth_uri
         return "%s?%s" % (self.auth_url, encoded)
 
     def get_oauth_token(self, code, **kwargs):

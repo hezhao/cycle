@@ -2,6 +2,7 @@ import os
 from store import Store
 from datetime import datetime, timedelta
 from flask import Flask, url_for, request, session, redirect, render_template
+from user_agents import parse
 from moves import MovesClient
 
 
@@ -34,8 +35,15 @@ def index_post():
     session['last_name']        = request.form['last_name']
     session['email_address']    = request.form['email_address']
 
+    # moves://
+    ua_string = request.headers.get('User-Agent')
+    user_agent = parse(ua_string)
     oauth_return_url = url_for('oauth_return', _external=True)
-    auth_url = moves.build_oauth_url(oauth_return_url)
+    if user_agent.is_mobile:
+        auth_url = moves.build_oauth_url(oauth_return_url, use_app=True)
+    else:
+        auth_url = moves.build_oauth_url(oauth_return_url, use_app=False)
+    print auth_url
     return redirect(auth_url)
 
 
@@ -101,7 +109,25 @@ def given_day(yyyyMMdd):
 def today():
     today = datetime.now().strftime('%Y%m%d')
     return given_day(today)
-    
+
+
+@app.route('/leaderboard')
+def leaderboard():
+    '''
+    Show user the leaderboard, no login is required
+    '''
+    pass
+
+
+@app.route('/admin')
+def admin():
+    '''
+    Export all user data to csv, login is required
+    '''
+    # user_id, first_name, last_name, email_address, start_time, end_time, activity_type
+    pass
+
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', debug=True)
