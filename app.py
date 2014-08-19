@@ -35,15 +35,16 @@ def index_post():
     session['last_name']        = request.form['last_name']
     session['email_address']    = request.form['email_address']
 
-    # moves://
+    # get user-agent 
     ua_string = request.headers.get('User-Agent')
     user_agent = parse(ua_string)
+    
+    # redirect to app from mobile browser, redirect to website and enter PIN from desktop browser
     oauth_return_url = url_for('oauth_return', _external=True)
     if user_agent.is_mobile:
         auth_url = moves.build_oauth_url(oauth_return_url, use_app=True)
     else:
         auth_url = moves.build_oauth_url(oauth_return_url, use_app=False)
-    print auth_url
     return redirect(auth_url)
 
 
@@ -60,16 +61,10 @@ def oauth_return():
     session['access_token'] = response['access_token']
     session['user_id'] = response['user_id']
 
-    # HSET user:[user_id] access_token
-    # HSET user:[user_id] refresh_token
-    # HSET user:[user_id] first_name 
-    # HSET user:[user_id] last_name
-    # HSET user:[user_id] email
-    store.set_access_token(session['user_id'], response['access_token'])
-    store.set_refresh_token(session['user_id'], response['refresh_token'])
-    store.set_first_name(session['user_id'], session['first_name'])
-    store.set_last_name(session['user_id'], session['last_name'])
-    store.set_email_address(session['user_id'], session['email_address'])
+    # store each user's access_token, refresh_token, first_name, 
+    # last_name, and email_address in redis hash
+    store.set_user( session['user_id'], response['access_token'], response['refresh_token'], 
+                    session['first_name'], session['last_name'], session['email_address'])
 
     return redirect(url_for('home'))
 
@@ -124,8 +119,15 @@ def admin():
     '''
     Export all user data to csv, login is required
     '''
-    # user_id, first_name, last_name, email_address, start_time, end_time, activity_type
-    pass
+    users = store.get_all_users()
+    for user in users:
+        access_token = user['access_token']
+        profile = moves.user_profile(access_token=access_token)
+        print profile['userId']
+        
+        # create download link to csv
+        # user_id, first_name, last_name, email_address, start_time, end_time, activity_type
+    return 'admin'
 
 
 
