@@ -1,4 +1,5 @@
 import redis
+import timeit
 
 class Store():
     """

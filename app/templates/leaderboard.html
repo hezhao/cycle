@@ -1,0 +1,32 @@
+<html>
+    <head>
+        <title>Leaderboard</title>
+        <link rel=stylesheet type=text/css href={{ url_for('static', filename='style.css') }}>
+    </head>
+    <body>
+        <table>
+        <tr>
+            <td>Rank</td>
+            <td>Name</td>
+            <td>Miles</td>
+            <td>Duration</td>
+            <td>Commute</td>
+            <td>Commute to Work</td>
+            <td>Commute from Work</td>
+            <td>Rate</td>
+        </tr>
+        {% for entry in entries %}
+        <tr>
+            <td>...</td>
+            <td>{{ entry.name }} </td>
+            <td>{{ entry.distance }} </td>
+            <td>{{ entry.duration }} </td>
+            <td>{{ entry.nCommutes }} </td>
+            <td>{{ entry.toWork }} </td>
+            <td>{{ entry.fromWork }} </td>
+            <td>{{ entry.rate }}%</td>
+        </tr>
+        {% endfor %}
+        </table>
+    </body>
+</html>
