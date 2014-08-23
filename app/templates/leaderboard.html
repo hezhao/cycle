@@ -1,32 +1,52 @@
 <html>
     <head>
         <title>Leaderboard</title>
-        <link rel=stylesheet type=text/css href={{ url_for('static', filename='style.css') }}>
+        <link rel=stylesheet type=text/css href="../static/style.css") }}>
     </head>
     <body>
-        <table>
-        <tr>
-            <td>Rank</td>
-            <td>Name</td>
-            <td>Miles</td>
-            <td>Duration</td>
-            <td>Commute</td>
-            <td>Commute to Work</td>
-            <td>Commute from Work</td>
-            <td>Rate</td>
-        </tr>
-        {% for entry in entries %}
-        <tr>
-            <td>...</td>
-            <td>{{ entry.name }} </td>
-            <td>{{ entry.distance }} </td>
-            <td>{{ entry.duration }} </td>
-            <td>{{ entry.nCommutes }} </td>
-            <td>{{ entry.toWork }} </td>
-            <td>{{ entry.fromWork }} </td>
-            <td>{{ entry.rate }}%</td>
-        </tr>
-        {% endfor %}
-        </table>
+        {% if not session['access_token'] %}
+        <div><a href={{ url_for('.register') }}>Register</a></div>
+        {% else  %}
+        <div><a href={{ url_for('.logout') }}>Logout</a></div>
+        {% endif %}
+        <div id="container">
+            <div class="logo">
+              <img src="../static/assets/logo-100px.gif" />
+            </div>
+            <div class="view">
+              <ul>
+                <li><a href="#">Day</a></li>
+                <li><a href="#">Week</a></li>
+                <li><a href="#">Month</a></li>
+              </ul>
+            </div>
+            <div class="next">
+              <ul>
+                <li><a href="#"> < prev </a></li>
+                <li><a href="#"> next > </a></li>
+              </ul>
+            </div>
+            <div class="period">August 2014</div>
+            <table>
+            <tr class="titles">
+                <td><b>Rank</b></td>
+                <td><b>Name</b></td>
+                <td><b>Miles</b></td>
+                <td><b>Duration</b></td>
+                <td><b>Rate</b></td>
+                <td><b>Commutes (to work / from work)</b></td>
+            </tr>
+            {% for entry in entries %}
+            <tr class="items">
+                <td>...</td>
+                <td>{{ entry.name }} </td>
+                <td>{{ entry.distance }} </td>
+                <td>{{ entry.duration }} </td>
+                <td>{{ entry.rate }}%</td>
+                <td>{{ entry.nCommutes }} ({{ entry.toWork }} / {{ entry.fromWork }} ) </td>
+            </tr>
+            {% endfor %}
+            </table>
+        </div>
     </body>
 </html>

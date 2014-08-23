@@ -7,8 +7,9 @@ class LeaderboardEntry():
     Leaderboard entry data class
     '''
 
-    def __init__(self, user=None, storyline=None):
+    def __init__(self, user=None, first_date=None, storyline=None):
         self.user       = user
+        self.first_date = first_date
         self.storyline  = storyline
 
         self.name       = ''
@@ -52,13 +53,7 @@ class LeaderboardEntry():
                 elif c.direction == Cycling.FROM_WORK:
                     self.fromWork += 1
 
-            # format cycling data
-            # distance: convert from meters to miles
-            # duration: convert from seconds to HH:MM:SS
-            self.distance   = round(self.distance / meter2mile, 1)
-            self.duration   = time.strftime('%H:%M:%S', time.gmtime(self.duration))
-            self.nCommutes  = self.toWork + self.fromWork
-            
+
             # find the numer of days when commuting to/from work
             if len(cycles) > 0:
                 self.commute_days += 1
@@ -71,9 +66,16 @@ class LeaderboardEntry():
                     self.work_days += 1
                     break
 
+        # format cycling data
+        # distance: convert from meters to miles
+        # duration: convert from seconds to HH:MM:SS
+        self.distance   = round(self.distance / meter2mile, 1)
+        self.duration   = time.strftime('%H:%M:%S', time.gmtime(self.duration))
+        self.nCommutes  = self.toWork + self.fromWork
+
         # return the cycling rate in percentage
         if self.work_days == 0:
             self.rate = 0
         else:
-            self.rate = int(self.commute_days / self.work_days * 100)
+            self.rate = int(float(self.commute_days) / self.work_days * 100)
 

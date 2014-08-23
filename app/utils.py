@@ -1,4 +1,5 @@
-import json
+import re
+from datetime import datetime
 from cycling import Cycling
 
 def segment_start_end(segment, res):
@@ -185,4 +186,38 @@ def cycles_of_the_day(segments):
     return cycles
 
 
+def validate_period(period, first_date):
+    '''
+    make sure only period is  between first_date and today
+    '''  
+    today = datetime.now().strftime('%Y%m%d')
+
+    # regex for day, week and month format
+    regex_day   = re.compile('^\d{8}$')
+    regex_week  = re.compile('^\d{4}-W\d{1,2}$')
+    regex_month = re.compile('^\d{6}$')
+
+    # Day yyyyMMdd
+    if regex_day.search(period):
+        if period >= first_date and period <= today:
+            return True
+    
+    # Week yyyy-Www
+    if regex_week.search(period):
+        this_week = str(datetime.now().isocalendar()[0]).zfill(2) + str(datetime.now().isocalendar()[1]).zfill(2)
+        period_week = period[0:4] + period[6:8]
+        first_date_week = first_date[0:4] + str(datetime.strptime(first_date, '%Y%m%d').isocalendar()[1]).zfill(2)
+
+        if period_week >= first_date_week and period_week <= this_week:
+            return True
+
+    # Month yyyyMM
+    if regex_month.search(period):
+        this_month       = datetime.now().strftime('%Y%m')
+        period_month     = period[0:6]
+        first_date_month = first_date[0:6]
+        if period_month >= first_date_month and period_month <= this_month:
+            return True
+        
+    return False
 

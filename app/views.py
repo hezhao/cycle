@@ -30,17 +30,23 @@ store           = Store(redis_url)
 views           = Blueprint('views', __name__)
 
 
+
 @views.route('/')
 def index():
+    return leaderboard()
+
+
+@views.route('/register')
+def register():
     if 'access_token' not in session:
         return render_template('register.html')
     return redirect(url_for('.home'))
 
-@views.route('/', methods=['POST'])
+
+@views.route('/register', methods=['POST'])
 def index_post():
     '''
     Return action from register page
-    TODO: validate name and email entries
     '''
     session['first_name']       = request.form['first_name']
     session['last_name']        = request.form['last_name']
@@ -89,57 +95,56 @@ def logout():
 
 @views.route('/home')
 def home():
-    profile = moves.user_profile(access_token=session['access_token'])
-    return render_template('home.html', first_name = session['first_name'])
+    return render_template('home.html', first_name=session['first_name'])
 
 
-@views.route('/day/<yyyyMMdd>')
-def given_day(yyyyMMdd):
-    info = moves.user_summary_daily(yyyyMMdd, access_token=session['access_token'])
-    res = ''
-    if info[0]['summary'] is None:
-        return res
-    for group in info[0]['summary']:
-        if group['group'] == 'walking':
-            res += 'Walking: %d steps<br />' % group['steps']
-        elif group['group'] == 'running':
-            res += 'Running: %d steps<br />' % group['steps']
-        elif group['group'] == 'cycling':
-            res += 'Cycling: %d meters<br />' % group['distance']
-        elif group['group'] == 'transport':
-            res += 'Transport: %d meters<br />' % group['distance']
-    return res
+# @views.route('/day/<yyyyMMdd>')
+# def given_day(yyyyMMdd):
+#     info = moves.user_summary_daily(yyyyMMdd, access_token=session['access_token'])
+#     res = ''
+#     if info[0]['summary'] is None:
+#         return res
+#     for group in info[0]['summary']:
+#         if group['group'] == 'walking':
+#             res += 'Walking: %d steps<br />' % group['steps']
+#         elif group['group'] == 'running':
+#             res += 'Running: %d steps<br />' % group['steps']
+#         elif group['group'] == 'cycling':
+#             res += 'Cycling: %d meters<br />' % group['distance']
+#         elif group['group'] == 'transport':
+#             res += 'Transport: %d meters<br />' % group['distance']
+#     return res
 
 
-@views.route('/today')
-def today():
-    today = datetime.now().strftime('%Y%m%d')
-    return given_day(today)
+# @views.route('/today')
+# def today():
+#     today = datetime.now().strftime('%Y%m%d')
+#     return given_day(today)
 
 
-@views.route('/storyline/<yyyyMMdd>')
-def storyline(yyyyMMdd):
-    info = moves.user_storyline_daily(yyyyMMdd, trackPoints={'false'}, access_token='5X7KZs25nO52IWulI01VZ7Bdz72O50lSruAaLAc2bEFxI2eyq9y9Hz6GQU0z23XL')
-    print info[0]['date']
-    segments = info[0]['segments']
-    # print json.dumps(segments, indent=2)
-    res = ''
-    for segment in segments:
-        if segment['type'] == 'place':
-            res = utils.place(segment, res)
-        elif segment['type'] == 'move':
-            res = utils.move(segment, res)
-        res += '<hr>'
-    return res
+# @views.route('/storyline/<yyyyMMdd>')
+# def storyline(yyyyMMdd):
+#     info = moves.user_storyline_daily(yyyyMMdd, trackPoints={'false'}, access_token='7Aryo5zL2i62OO7OJNvE3p4K0K2vDVS1NGVKpSDKFy5Miy464S0FCngdNE6j1m9N')
+#     print info[0]['date']
+#     segments = info[0]['segments']
+#     # print json.dumps(segments, indent=2)
+#     res = ''
+#     for segment in segments:
+#         if segment['type'] == 'place':
+#             res = utils.place(segment, res)
+#         elif segment['type'] == 'move':
+#             res = utils.move(segment, res)
+#         res += '<hr>'
+#     return res
 
 
 @views.route('/leaderboard')
 def leaderboard():
-    return 'leaderboard'
+    this_month = datetime.now().strftime('%Y%m')
+    return leaderboard_period(this_month)
 
-
-@views.route('/leaderboard/daily/<yyyyMMdd>')
-def leaderboard_daily(yyyyMMdd):
+@views.route('/leaderboard/<period>')
+def leaderboard_period(period):
     '''
     Show user the daily leaderboard, no login is required
     '''
@@ -147,38 +152,25 @@ def leaderboard_daily(yyyyMMdd):
     users = store.get_all_users()
     for user in users:
 
-        # make sure user started using Moves no later than Day yyyyDDdd
+        # TODO
+        # get rid of this by storing frist_date into redis
+        ###################################################
         access_token = user['access_token']
         profile = moves.user_profile(access_token=access_token)
         first_date = profile['profile']['firstDate']
-        today = datetime.now().strftime('%Y%m%d')
-        if yyyyMMdd < first_date or yyyyMMdd > today:
+        ###################################################
+
+        # validate period for user
+        if utils.validate_period(period, first_date) is False:
             continue
 
-        # get user info for Day yyyyMMdd
-        storyline = moves.user_storyline_daily(yyyyMMdd, trackPoints={'false'}, access_token=access_token)
+        # get user info for the period (day/week/month)
+        storyline = moves.user_storyline_daily(period, trackPoints={'false'}, access_token=access_token)
 
-        # sum all trips of Day yyyyMMdd for each user
-        leaderboard_entry = LeaderboardEntry(user, storyline)
+        # sum all trips of the peridod (day/week/month) for each user
+        leaderboard_entry = LeaderboardEntry(user, first_date, storyline)
         entries.append(leaderboard_entry)
-    return render_template('leaderboard.html', entries = entries)
-
-
-@views.route('/leaderboard/weekly/<yyyy_Www>')
-def leaderboard_weekly(yyyy_Www):
-    '''
-    Show user the weekly leaderboard, no login is required
-    '''
-    return 'leaderboard %s' % yyyy_Www
-
-
-@views.route('/leaderboard/monthly/<yyyyMM>')
-def leaderboard_monthly(yyyyMM):
-    '''
-    Show user the monthly leaderboard, no login is required
-    '''
-    return 'leaderboard %s' % yyyyMM
-
+    return render_template('leaderboard.html', entries=entries)
 
 @views.route('/admin')
 def admin():

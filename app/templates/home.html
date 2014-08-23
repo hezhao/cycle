@@ -1,12 +1,12 @@
 <html>
     <head>
         <title>Registration Success</title>
-        <link rel=stylesheet type=text/css href={{ url_for('static', filename='style.css') }}>
+        <link rel=stylesheet type=text/css href="../static/style.css">
     </head>
     <body>
         <p>Congratulations, {{first_name}}!</p>
         <p>You have successfully linked your Moves app and entered with W+K Cycle challenge! Keep cycling, running, and walking with your Moves app, and you have a chance to win gift cards to local bike stores each month.</p> 
-        <p>View <a href='/today'>today's</a> or any day's activities.</p>
+        <p>View <a href='/leaderboard'>leaderboard</a> to see current ranking.</p>
         <p>You can now safely <a href='/logout'>logout</a>.</p>
     </body>
 </html>
