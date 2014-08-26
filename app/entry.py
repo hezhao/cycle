@@ -15,6 +15,7 @@ class LeaderboardEntry():
         self.name       = ''
         self.distance   = 0.0
         self.duration   = 0.0
+        self.speed      = 0
         self.toWork     = 0
         self.fromWork   = 0
         self.nCommutes  = 0
@@ -68,10 +69,18 @@ class LeaderboardEntry():
 
         # format cycling data
         # distance: convert from meters to miles
+        # speed: mph
         # duration: convert from seconds to HH:MM:SS
-        self.distance   = round(self.distance / meter2mile, 1)
+        self.distance   = self.distance / meter2mile
+        if self.duration > 0:
+            self.speed  = self.distance / (self.duration / 3600)
+
         self.duration   = time.strftime('%H:%M:%S', time.gmtime(self.duration))
         self.nCommutes  = self.toWork + self.fromWork
+
+        # round up to 0.1
+        self.distance   = round(self.distance, 1)
+        self.speed      = round(self.speed, 1)
 
         # return the cycling rate in percentage
         if self.work_days == 0:
