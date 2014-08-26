@@ -1,11 +1,19 @@
 <html>
     <head>
         <title>Leaderboard</title>
-        <link rel=stylesheet type=text/css href="../static/style.css") }}>
+        <link rel="stylesheet" type="text/css" href="../static/style.css" />
+        <script src="/static/js/jquery-1.11.1.min.js"></script>
+        <script src="/static/js/jquery.tablesorter.min.js"></script>
+        <script type="text/javascript">
+          $(document).ready(function() 
+          {
+            $("#leader").tablesorter({sortList:[[6,1], [5,1]], widgets: ['zebra']}); 
+          });
+        </script>
     </head>
     <body>
         {% if not session['access_token'] %}
-        <div class="register"><a href={{ url_for('.register') }}>Register</a></div>
+        <div class="nav"><a href={{ url_for('.register') }}>Register</a></div>
         {% else  %}
         <div><a href={{ url_for('.logout') }}>Logout</a></div>
         {% endif %}
@@ -27,16 +35,21 @@
               </ul>
             </div>
             <div class="period">{{ urls.title }}</div>
-            <table>
+            <table id="leader" class="tablesorter">
+            <thead>
             <tr class="titles">
-                <td><b>Rank</b></td>
-                <td><b>Name</b></td>
-                <td><b>Miles</b></td>
-                <td><b>Duration</b></td>
-                <td><b>Average Speed</b></td>
-                <td><b>Rate</b></td>
-                <td><b>Commutes (to work / from work)</b></td>
+                <th><b>Rank</b></th>
+                <th><b>Name</b></th>
+                <th><b>Miles</b></th>
+                <th><b>Duration</b></th>
+                <th><b>Speed</b></th>
+                <th><b>Rate</b></th>
+                <th><b>Trips</b></th>
+                <th><b>Inbound</b></th>
+                <th><b>Outbound</b></th>
             </tr>
+            </thead>
+            <tbody>
             {% for entry in entries %}
             <tr class="items">
                 <td>...</td>
@@ -45,9 +58,12 @@
                 <td>{{ entry.duration }} </td>
                 <td>{{ entry.speed }} mph</td>
                 <td>{{ entry.rate }}%</td>
-                <td>{{ entry.nCommutes }} ({{ entry.toWork }} / {{ entry.fromWork }} ) </td>
+                <td>{{ entry.nCommutes }}</td>
+                <td>{{ entry.toWork }}</td>
+                <td>{{ entry.fromWork }}</td>
             </tr>
             {% endfor %}
+            </tbody>
             </table>
         </div>
     </body>
