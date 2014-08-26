@@ -15,24 +15,25 @@
             </div>
             <div class="view">
               <ul>
-                <li><a href="#">Day</a></li>
-                <li><a href="#">Week</a></li>
-                <li><a href="#">Month</a></li>
+                <li><a href={{ urls.day_url }}>Day</a></li>
+                <li><a href={{ urls.week_url }}>Week</a></li>
+                <li><a href={{ urls.month_url }}>Month</a></li>
               </ul>
             </div>
             <div class="next">
               <ul>
-                <li><a href="#"> < prev </a></li>
-                <li><a href="#"> next > </a></li>
+                <li><a href={{ urls.prev_url }}> < prev </a></li>
+                <li><a href={{ urls.next_url }}> next > </a></li>
               </ul>
             </div>
-            <div class="period">August 2014</div>
+            <div class="period">{{ urls.title }}</div>
             <table>
             <tr class="titles">
                 <td><b>Rank</b></td>
                 <td><b>Name</b></td>
                 <td><b>Miles</b></td>
                 <td><b>Duration</b></td>
+                <td><b>Average Speed</b></td>
                 <td><b>Rate</b></td>
                 <td><b>Commutes (to work / from work)</b></td>
             </tr>
@@ -42,6 +43,7 @@
                 <td>{{ entry.name }} </td>
                 <td>{{ entry.distance }} </td>
                 <td>{{ entry.duration }} </td>
+                <td>{{ entry.speed }} mph</td>
                 <td>{{ entry.rate }}%</td>
                 <td>{{ entry.nCommutes }} ({{ entry.toWork }} / {{ entry.fromWork }} ) </td>
             </tr>
