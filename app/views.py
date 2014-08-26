@@ -1,11 +1,12 @@
 # TODO
-# - leaderboard weekly, monthly
+# - ranking javascript
 # - admin dump to csv
+# - use refresh token when access token is expired
 # ##############################################
 # - save user['profile']['first_date'] to redis
 # - save all leaderboard entries into one data structure in redis
 # - read leaderboard entries from redis 
-# - flask background thread to update leader board every 10 minute
+# - flask background thread to update leader board every hour
 # - reduce use of moves api (0.5s per request)
 # - reduce use of redis api (0.1s per operation)
 
@@ -143,6 +144,7 @@ def leaderboard():
     this_month = datetime.now().strftime('%Y%m')
     return leaderboard_period(this_month)
 
+
 @views.route('/leaderboard/<period>')
 def leaderboard_period(period):
     '''
@@ -170,7 +172,12 @@ def leaderboard_period(period):
         # sum all trips of the peridod (day/week/month) for each user
         leaderboard_entry = LeaderboardEntry(user, first_date, storyline)
         entries.append(leaderboard_entry)
-    return render_template('leaderboard.html', entries=entries)
+
+    # build up previous and next links
+    urls = utils.page_urls(period)
+    return render_template('leaderboard.html', entries=entries, urls=urls)
+
+
 
 @views.route('/admin')
 def admin():

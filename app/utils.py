@@ -1,5 +1,9 @@
 import re
-from datetime import datetime
+import time
+import calendar
+from datetime import date, datetime, timedelta
+from isoweek import Week
+from flask import url_for
 from cycling import Cycling
 
 def segment_start_end(segment, res):
@@ -165,12 +169,8 @@ def cycles_of_the_day(segments):
 
     # find all moves that has cycling
     for i, segment in enumerate(segments):
-        # print i, json.dumps(segment, indent=2)
         if is_cycling(segment):
             idx_cycling.append(i)
-        else:
-            pass
-            # print i
 
     # filter eligible cycling moves between home and work
     for i in idx_cycling:
@@ -192,27 +192,21 @@ def validate_period(period, first_date):
     '''  
     today = datetime.now().strftime('%Y%m%d')
 
-    # regex for day, week and month format
-    regex_day   = re.compile('^\d{8}$')
-    regex_week  = re.compile('^\d{4}-W\d{1,2}$')
-    regex_month = re.compile('^\d{6}$')
-
     # Day yyyyMMdd
-    if regex_day.search(period):
+    if type_of_period(period) == 'day':
         if period >= first_date and period <= today:
             return True
     
     # Week yyyy-Www
-    if regex_week.search(period):
-        this_week = str(datetime.now().isocalendar()[0]).zfill(2) + str(datetime.now().isocalendar()[1]).zfill(2)
-        period_week = period[0:4] + period[6:8]
-        first_date_week = first_date[0:4] + str(datetime.strptime(first_date, '%Y%m%d').isocalendar()[1]).zfill(2)
-
+    elif type_of_period(period) == 'week':
+        this_week = Week.thisweek()
+        period_week = Week.fromstring(period)
+        first_date_week = Week.withdate(datetime.strptime(first_date, '%Y%m%d'))
         if period_week >= first_date_week and period_week <= this_week:
             return True
 
     # Month yyyyMM
-    if regex_month.search(period):
+    elif type_of_period(period) == 'month':
         this_month       = datetime.now().strftime('%Y%m')
         period_month     = period[0:6]
         first_date_month = first_date[0:6]
@@ -220,4 +214,118 @@ def validate_period(period, first_date):
             return True
         
     return False
+
+
+def type_of_period(period):
+    '''
+    determine the type of a period.
+    e.g. 20140824 is a day
+         201408   is a month
+         2014-W34 is a week
+    '''
+    # regex for day, week and month format
+    regex_day   = re.compile('^\d{8}$')
+    regex_week  = re.compile('^\d{4}-W\d{1,2}$')
+    regex_month = re.compile('^\d{6}$')
+
+    # Day yyyyMMdd
+    if regex_day.search(period):
+        return 'day'
+    # Week yyyy-Www
+    elif regex_week.search(period):
+        return 'week'
+    # Month yyyyMM
+    elif regex_month.search(period):
+        return 'month'
+
+    return None
+
+
+def page_urls(period):
+    '''
+    return the next period.
+    e.g. next period of 20140824 is 20140825
+         next period of 201408   is 201409
+         next period of 2014-W34 is 2014-W35
+    '''
+
+    page = dict()
+
+    # 'Day', 'Week', 'Month' link to the current day/week/month 
+    today             = datetime.now().strftime('%Y%m%d')
+    this_week         = Week.thisweek().isoformat()[:4] + '-' +  Week.thisweek().isoformat()[4:]
+    this_month        = datetime.now().strftime('%Y%m')
+    page['day_url']   = url_for('views.leaderboard_period', period=today)
+    page['week_url']  = url_for('views.leaderboard_period', period=this_week)
+    page['month_url'] = url_for('views.leaderboard_period', period=this_month)
+
+    
+    if type_of_period(period) == 'day':
+        # title 
+        today             = datetime.strptime(period, '%Y%m%d')
+        page['title']     = custom_strftime(today, '%a, %B {S} %Y')
+
+        # 'prev' and 'next' links
+        t                 = time.strptime(period, '%Y%m%d')
+        today             = date(t.tm_year, t.tm_mon, t.tm_mday)
+        nextday           = today + timedelta(1)
+        prevday           = today + timedelta(-1)
+        page['next_url']  = url_for('views.leaderboard_period', period=nextday.strftime('%Y%m%d'))
+        page['prev_url']  = url_for('views.leaderboard_period', period=prevday.strftime('%Y%m%d'))
+      
+        return page
+    
+    elif type_of_period(period) == 'week':
+        
+        # title 
+        page['title']     = datetime.strptime(period + '1', '%Y-W%W%w').strftime('Week %W, %Y')
+
+        # 'prev' and 'next' links
+
+        # begin_of_next_week = time.strptime('201435 1', '%Y%W %w')
+        # use isoweek instead strptime('%W') since isoweek starts from week 1 
+        # while strptime('%W') returns week number starting from week 0
+        thisweek = Week.fromstring(period)
+        nextweek = thisweek + 1
+        # ISO 8610 format is "YYYYWww" while Moves API takes "YYYY-Www"
+        page['next_url'] = url_for('views.leaderboard_period', period=nextweek.isoformat()[:4] + '-' + nextweek.isoformat()[4:])
+        # next_text = 'Week ' + str(nextweek.week) + ', ' + str(nextweek.year)
+        prevweek = thisweek -1
+        page['prev_url'] = url_for('views.leaderboard_period', period=prevweek.isoformat()[:4] + '-' + prevweek.isoformat()[4:])
+        # prev_text = 'Week ' + str(prevweek.week) + ', ' + str(prevweek.year)
+        # return {'next_url': next_url, 'next_text': next_text, 'prev_url': prev_url, 'prev_text': prev_text} 
+
+    elif type_of_period(period) == 'month':
+
+        #title
+        page['title'] = datetime.strptime(period, '%Y%m').strftime('%B %Y')
+
+        # 'prev' and 'next' links
+        t = time.strptime(period,'%Y%m')
+        thismonth = date(t.tm_year, t.tm_mon, 1)
+        nextmonth = add_months(thismonth, 1)
+        prevmonth = add_months(thismonth, -1)
+        page['next_url'] = url_for('views.leaderboard_period', period=nextmonth.strftime('%Y%m'))
+        page['prev_url'] = url_for('views.leaderboard_period', period=prevmonth.strftime('%Y%m'))
+      
+    return page
+
+
+def add_months(sourcedate, months):
+    month = sourcedate.month - 1 + months
+    year = sourcedate.year + month / 12
+    # Note: python % results in a remainder 0<=r<divisor
+    #       so the resulting month is alwasy greater than 0
+    #       even if the input month is smaller than 0
+    month = month % 12 + 1
+    day = min(sourcedate.day, calendar.monthrange(year, month)[1])
+    return date(year, month, day)
+
+
+def custom_strftime(t, format):
+    return t.strftime(format).replace('{S}', str(t.day) + suffix(t.day))
+
+
+def suffix(d):
+    return 'th' if 11<=d<=13 else {1:'st',2:'nd',3:'rd'}.get(d%10, 'th')
 
