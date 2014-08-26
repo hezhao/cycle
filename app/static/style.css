@@ -4,6 +4,7 @@ body {
     font-style: normal;
     font-size: 15px;
     line-height: 20px;
+    margin: 0px;
 }
 
 a {
@@ -47,11 +48,8 @@ code {
     margin: 0 15px 0 15px;
 }
 
-
 #container{
-    margin: 10px;
-    border: 1px solid #D0D0D0;
-    -webkit-box-shadow: 0 0 8px #D0D0D0;
+    margin: 0px;
 }
 
 .title {
@@ -68,6 +66,13 @@ p.footer{
     line-height: 32px;
     padding: 0 10px 0 10px;
     margin: 20px 0 0 0;
+}
+
+div.register {
+    padding: 10px 0 10px 10px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #e0e0e0;
+    background-color: whitesmoke;
 }
 
 div.logo {
@@ -88,7 +93,7 @@ div.next {
 div.period {
     font-size: 20px;
     font-weight: bold;
-    margin-bottom: 20px;
+    padding-bottom: 20px;
     text-align: center;
 }
 
@@ -105,8 +110,10 @@ li {
 /* table */
 
 table {
-    width: 100%;
-    border: 1px solid black;
+    width: 85%;
+    margin:0px auto;
+    border: 1px solid #D0D0D0;
+    -webkit-box-shadow: 0 0 8px #D0D0D0;
 }
 
 td {
@@ -122,7 +129,7 @@ tr.items > td {
 }
 
 tr:nth-child(even) {background: #f3f3f3}
-tr:nth-child(odd) {background: #ffffff}
+tr:nth-child(odd) {background: #whitesmoke}
 
 /* form */
 form label{

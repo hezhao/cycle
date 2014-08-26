@@ -5,13 +5,13 @@
     </head>
     <body>
         {% if not session['access_token'] %}
-        <div><a href={{ url_for('.register') }}>Register</a></div>
+        <div class="register"><a href={{ url_for('.register') }}>Register</a></div>
         {% else  %}
         <div><a href={{ url_for('.logout') }}>Logout</a></div>
         {% endif %}
         <div id="container">
             <div class="logo">
-              <img src="../static/assets/logo-100px.gif" />
+              <a href="/"><img src="../static/assets/logo-100px.gif" /></a>
             </div>
             <div class="view">
               <ul>
