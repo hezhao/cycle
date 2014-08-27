@@ -20,6 +20,7 @@ class LeaderboardEntry():
         self.fromWork   = 0
         self.nCommutes  = 0
         self.rate       = 0
+        self.newuser    = False
 
         self.commute_days = 0
         self.work_days    = 0
@@ -66,6 +67,10 @@ class LeaderboardEntry():
                 if utils.is_work(segment):
                     self.work_days += 1
                     break
+
+            # find if the user started using Moves during the storyline peirod
+            if self.first_date == day['date']:
+                self.newuser = True
 
         # format cycling data
         # distance: convert from meters to miles

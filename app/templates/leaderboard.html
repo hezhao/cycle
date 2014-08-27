@@ -1,13 +1,13 @@
 <html>
     <head>
-        <title>Leaderboard</title>
+        <title>W+K Cycle Leaderboard</title>
         <link rel="stylesheet" type="text/css" href="../static/style.css" />
-        <script src="/static/js/jquery-1.11.1.min.js"></script>
-        <script src="/static/js/jquery.tablesorter.min.js"></script>
+        <script src="../static/js/jquery-1.11.1.min.js"></script>
+        <script src="../static/js/jquery.tablesorter.min.js"></script>
         <script type="text/javascript">
           $(document).ready(function() 
           {
-            $("#leader").tablesorter({sortList:[[6,1], [5,1]], widgets: ['zebra']}); 
+            $("#leader").tablesorter({sortInitialOrder: 'desc', sortList:[[4,1]]}); 
           });
         </script>
     </head>
@@ -15,7 +15,7 @@
         {% if not session['access_token'] %}
         <div class="nav"><a href={{ url_for('.register') }}>Register</a></div>
         {% else  %}
-        <div><a href={{ url_for('.logout') }}>Logout</a></div>
+        <div class="nav"><a href={{ url_for('.logout') }}>Logout</a></div>
         {% endif %}
         <div id="container">
             <div class="logo">
@@ -38,22 +38,23 @@
             <table id="leader" class="tablesorter">
             <thead>
             <tr class="titles">
-                <th><b>Rank</b></th>
-                <th><b>Name</b></th>
-                <th><b>Miles</b></th>
-                <th><b>Duration</b></th>
-                <th><b>Speed</b></th>
-                <th><b>Rate</b></th>
-                <th><b>Trips</b></th>
-                <th><b>Inbound</b></th>
-                <th><b>Outbound</b></th>
+                <th><b>Name</b>&nbsp;&nbsp;&nbsp;</th>
+                <th><b>Miles</b>&nbsp;&nbsp;&nbsp;</th>
+                <th><b>Duration</b>&nbsp;&nbsp;&nbsp;</th>
+                <th><b>Speed</b>&nbsp;&nbsp;&nbsp;</th>
+                <th><b>Rate</b>&nbsp;&nbsp;&nbsp;</th>
+                <th><b>Trips</b>&nbsp;&nbsp;&nbsp;</th>
+                <th><b>Inbound</b>&nbsp;&nbsp;&nbsp;</th>
+                <th><b>Outbound</b>&nbsp;&nbsp;&nbsp;</th>
             </tr>
             </thead>
             <tbody>
             {% for entry in entries %}
             <tr class="items">
-                <td>...</td>
-                <td>{{ entry.name }} </td>
+                <td>
+                {% if entry.newuser %} <img src="../static/assets/icon-new-user.gif" /> {% endif %} 
+                {{ entry.name }} 
+                </td>
                 <td>{{ entry.distance }} </td>
                 <td>{{ entry.duration }} </td>
                 <td>{{ entry.speed }} mph</td>
