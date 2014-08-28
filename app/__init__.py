@@ -7,4 +7,4 @@ from flask_sslify import SSLify
 app             = Flask(__name__)
 app.secret_key  = os.environ['FLASK_APP_SECRET']
 app.register_blueprint(views)
-sslify          = SSLify(app)
+sslify          = SSLify(app, permanent=True)
