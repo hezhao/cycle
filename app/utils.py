@@ -1,6 +1,7 @@
 import re
 import time
 import calendar
+import json
 from datetime import date, datetime, timedelta
 from isoweek import Week
 from flask import url_for
@@ -162,26 +163,60 @@ def cycles_of_the_day(segments):
     return a list of Cycle class instances to/from work in a given day segments 
     '''
     idx_cycling = []
+    idx_home_work = []
     cycles = []
 
     if segments is None:
         return cycles
 
-    # find all moves that has cycling
-    for i, segment in enumerate(segments):
-        if is_cycling(segment):
-            idx_cycling.append(i)
+    # # find all moves that has cycling
+    # for i, segment in enumerate(segments):
+    #     if is_cycling(segment):
+    #         idx_cycling.append(i)
 
-    # filter eligible cycling moves between home and work
-    for i in idx_cycling:
-        from_place = move_from_place(i, segments)
-        to_place   = move_to_place(i, segments)
-        if is_home(from_place) and is_work(to_place):
-            cycle_to_work = init_cycling(segments[i], i, Cycling.TO_WORK)
-            cycles.append(cycle_to_work)
-        if is_work(from_place) and is_home(to_place):
-            cycle_from_work = init_cycling(segments[i], i, Cycling.FROM_WORK)
-            cycles.append(cycle_from_work)
+    # # filter eligible cycling moves between home and work
+    # for i in idx_cycling:
+    #     from_place = move_from_place(i, segments)
+    #     to_place   = move_to_place(i, segments)
+    #     if is_home(from_place) and is_work(to_place):
+    #         cycle_to_work = init_cycling(segments[i], i, Cycling.TO_WORK)
+    #         cycles.append(cycle_to_work)
+    #     if is_work(from_place) and is_home(to_place):
+    #         cycle_from_work = init_cycling(segments[i], i, Cycling.FROM_WORK)
+    #         cycles.append(cycle_from_work)
+
+
+    ## this new method takes into account of temporary stops during a trip,
+    ## it first finds all places marked as home or work, and then add up
+    ## all cycling trips between a home and a workplace, and vice verce,
+    ## as long as there is a cycling trip in between, we say this is a cycling
+    ## commute.
+
+    # find all places that has home or work
+    for i, segment in enumerate(segments):
+        if is_home(segment) or is_work(segment):
+            idx_home_work.append(i)
+
+    # find all cycles between home and work, count only one trip between home and work
+    for i in range(len(idx_home_work)-1):
+        idx_start = idx_home_work[i]
+        idx_end   = idx_home_work[i+1]
+
+        # home to work
+        if is_home(segments[idx_start]) and is_work(segments[idx_end]):
+            for j in range(idx_start, idx_end):
+                segment = segments[j]
+                if is_cycling(segment):
+                    cycle_to_work = init_cycling(segment, j, Cycling.TO_WORK)
+                    cycles.append(cycle_to_work)
+
+        # work to home
+        if is_work(segments[idx_start]) and is_home(segments[idx_end]):
+            for j in range(idx_start, idx_end):
+                segment = segments[j]
+                if is_cycling(segment):
+                    cycle_from_work = init_cycling(segment, j, Cycling.FROM_WORK)
+                    cycles.append(cycle_from_work)
 
     return cycles
 

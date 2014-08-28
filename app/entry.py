@@ -40,21 +40,20 @@ class LeaderboardEntry():
             # find cycling commutes for the day
             segments = day['segments']
             cycles = utils.cycles_of_the_day(segments)
+            is_commute_to_work_today = False
+            is_commute_from_work_today = False
 
-            # # prints
-            # print self.user['user_id'], self.user['first_name'], self.user['last_name'], self.user['email_address']
-            # for c in cycles:
-            #     print c.formatted()
-           
-            # sum all trips for each user
+            # only count one commute per way even though there may be multiple cycling trips
+            # in one direciton (considering stops), maximum two total commutes per day
             for c in cycles:
                 self.distance += c.distance
                 self.duration += c.duration
-                if c.direction == Cycling.TO_WORK:
+                if not is_commute_to_work_today and c.direction == Cycling.TO_WORK:
+                    is_commute_to_work_today = True
                     self.toWork += 1
-                elif c.direction == Cycling.FROM_WORK:
+                elif not is_commute_from_work_today and c.direction == Cycling.FROM_WORK:
+                    is_commute_from_work_today = True
                     self.fromWork += 1
-
 
             # find the numer of days when commuting to/from work
             if len(cycles) > 0:
