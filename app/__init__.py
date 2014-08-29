@@ -1,3 +1,4 @@
+import os
 from flask import Flask
 from flask_sslify import SSLify
 from app.views import views as views
@@ -8,3 +9,6 @@ sslify     = SSLify(app, permanent=True)
 
 # blueprints
 app.register_blueprint(views)
+
+# flask app secret
+app.secret_key  = os.environ['FLASK_APP_SECRET']
