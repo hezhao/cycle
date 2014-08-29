@@ -1,12 +1,12 @@
 # TODO
-# - ranking javascript
-# - admin dump to csv
+# - admin select from to dates dump to csv (first colume is people)
 # - use refresh token when access token is expired
+# - 1st 2nd 3rd Prizes
+# - redis SET key value EX 3600
 # ##############################################
 # - save user['profile']['first_date'] to redis
 # - save all leaderboard entries into one data structure in redis
-# - read leaderboard entries from redis 
-# - flask background thread to update leader board every hour
+# - read leaderboard entries from redis
 # - reduce use of moves api (0.5s per request)
 # - reduce use of redis api (0.1s per operation)
 
@@ -14,11 +14,13 @@ import os
 import json
 from store import Store
 from datetime import datetime
-from flask import Blueprint, url_for, request, session, redirect, render_template
+from flask import Blueprint, url_for, request, Response, session, redirect, render_template
+from functools import wraps
 from user_agents import parse
 from moves import MovesClient
 import utils
 from entry import LeaderboardEntry
+
 
 # config vars
 client_id       = os.environ['CLIENT_ID']
@@ -29,7 +31,6 @@ redis_url       = os.environ['REDISTOGO_URL']
 moves           = MovesClient(client_id, client_secret)
 store           = Store(redis_url)
 views           = Blueprint('views', __name__)
-
 
 
 @views.route('/')
@@ -99,33 +100,9 @@ def home():
     return render_template('home.html', first_name=session['first_name'])
 
 
-# @views.route('/day/<yyyyMMdd>')
-# def given_day(yyyyMMdd):
-#     info = moves.user_summary_daily(yyyyMMdd, access_token=session['access_token'])
-#     res = ''
-#     if info[0]['summary'] is None:
-#         return res
-#     for group in info[0]['summary']:
-#         if group['group'] == 'walking':
-#             res += 'Walking: %d steps<br />' % group['steps']
-#         elif group['group'] == 'running':
-#             res += 'Running: %d steps<br />' % group['steps']
-#         elif group['group'] == 'cycling':
-#             res += 'Cycling: %d meters<br />' % group['distance']
-#         elif group['group'] == 'transport':
-#             res += 'Transport: %d meters<br />' % group['distance']
-#     return res
-
-
-# @views.route('/today')
-# def today():
-#     today = datetime.now().strftime('%Y%m%d')
-#     return given_day(today)
-
-
 # @views.route('/storyline/<yyyyMMdd>')
 # def storyline(yyyyMMdd):
-#     info = moves.user_storyline_daily(yyyyMMdd, trackPoints={'false'}, access_token='7Aryo5zL2i62OO7OJNvE3p4K0K2vDVS1NGVKpSDKFy5Miy464S0FCngdNE6j1m9N')
+#     info = moves.user_storyline_daily(yyyyMMdd, trackPoints={'false'}, access_token='access_token')
 #     print info[0]['date']
 #     segments = info[0]['segments']
 #     # print json.dumps(segments, indent=2)
@@ -178,17 +155,34 @@ def leaderboard_period(period):
     return render_template('leaderboard.html', entries=entries, urls=urls)
 
 
+def validate_admin(username, password):
+    return username == 'wkcycle' and password == 'supermegabonus'
+
+def admin_auth(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        auth = request.authorization
+        if not auth or not validate_admin(auth.username, auth.password):
+            return Response(
+                'Could not verify your access level for that URL.\n'
+                'You have to login with proper credentials', 
+                401, {'WWW-Authenticate': 'Basic realm="Login Required"'})
+        return f(*args, **kwargs)
+    return decorated
+
 
 @views.route('/admin')
+@admin_auth
 def admin():
     '''
-    Export all user data to csv, login is required
+    Export all user data of selected day range to csv, login is required
     '''
+    print 'admin'
     users = store.get_all_users()
     for user in users:
         access_token = user['access_token']
         print user['user_id'], user['first_name'], user['last_name'], user['email_address']
         
         # create download link to csv
-        # user_id, first_name, last_name, email_address, start_time, end_time, distance, duration, #commutes (2x a day)
-    return 'admin'
+        # is_new_user, rate, days_worked, #commutes, distance, duration
+    return render_template('admin.html')
