@@ -7,10 +7,10 @@
     <body>
         <div id="container">
             <div class="nav">
-              <h1>Register with W+K Cycle</h1>
+              <a href={{ url_for('.index') }}>&#8636; back</a>
             </div>
             <div id="content">
-
+                <h1>Register with W+K Cycle</h1>
                 <form class="validate-form" method="post" action="/register">
                   <label>Name</label>
                   <input type="text" placeholder="First" name="first_name" required />

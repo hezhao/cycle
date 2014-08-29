@@ -20,11 +20,11 @@ a:hover {
 
 
 h1 {
-    margin: 0;
+    margin: 0px;
+    padding-bottom: 20px;
     font-size: 18px;
     font-weight: 400;
     line-height: 30px;
-    text-transform: capitalize;
 }
 
 code {
@@ -61,8 +61,8 @@ p.footer{
 }
 
 div.nav {
-    padding: 10px 0 10px 10px;
-    margin-bottom: 20px;
+    margin: 0px;
+    padding: 10px;
     border-bottom: 1px solid #e0e0e0;
     background-color: whitesmoke;
 }
@@ -87,6 +87,10 @@ div.period {
     font-weight: bold;
     padding-bottom: 20px;
     text-align: center;
+}
+
+.right {
+    float: right;
 }
 
 ul {

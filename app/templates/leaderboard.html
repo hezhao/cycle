@@ -12,12 +12,16 @@
         </script>
     </head>
     <body>
+     <div id="container">
+        <div class="nav">
         {% if not session['access_token'] %}
-        <div class="nav"><a href={{ url_for('.register') }}>Register</a></div>
+        <a href={{ url_for('.register') }}>Register</a>
         {% else  %}
-        <div class="nav"><a href={{ url_for('.logout') }}>Logout</a></div>
+        <a href={{ url_for('.logout') }}>Logout</a>
         {% endif %}
-        <div id="container">
+        <a class="right" href={{ url_for('.admin') }}>Admin</a>
+        </div>
+        <div id="content">
             <div class="logo">
               <a href="/"><img src="../static/assets/logo-100px.gif" /></a>
             </div>
@@ -67,5 +71,6 @@
             </tbody>
             </table>
         </div>
+      </div>
     </body>
 </html>
