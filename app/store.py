@@ -16,10 +16,11 @@ class Store():
         '''
         pass
 
-    def set_user(self, user_id, access_token, refresh_token, first_name, last_name, email_address):
+    def set_user(self, user_id, access_token, refresh_token, first_name, last_name, email_address, first_date):
         '''
         HMSET user:[user_id] 'user_id' user_id 'access_token' access_token 'refresh_token' refresh_token 
                              'first_name' first_name 'last_name' last_name 'email_address' email_address
+                             'first_date' first_date
         '''
         m = {}
         m['user_id']        = user_id
@@ -28,6 +29,7 @@ class Store():
         m['first_name']     = first_name
         m['last_name']      = last_name
         m['email_address']  = email_address
+        m['first_date']     = first_date
 
         return self.redis.hmset('user:%d' % user_id, m)
     
@@ -37,7 +39,7 @@ class Store():
         HMGET user:[user_id] keys
         '''
         users = []
-        keys = ['user_id', 'access_token', 'refresh_token', 'first_name', 'last_name', 'email_address']
+        keys = ['user_id', 'access_token', 'refresh_token', 'first_name', 'last_name', 'email_address', 'first_date']
         rkeys = self.redis.keys('*');
         for rkey in rkeys:
             values = self.redis.hmget(rkey, keys)

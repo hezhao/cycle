@@ -80,10 +80,14 @@ def oauth_return():
     session['access_token'] = response['access_token']
     session['user_id'] = response['user_id']
 
+    # find first_date from GET /user/profile
+    profile = moves.user_profile(access_token=session['access_token'])
+    first_date = profile['profile']['firstDate']
+
     # store each user's access_token, refresh_token, first_name, 
-    # last_name, and email_address in redis hash
+    # last_name, email_address, and first_date in redis hash
     store.set_user( session['user_id'], response['access_token'], response['refresh_token'], 
-                    session['first_name'], session['last_name'], session['email_address'])
+                    session['first_name'], session['last_name'], session['email_address'], first_date)
 
     return redirect(url_for('.home'))
 
@@ -130,14 +134,9 @@ def leaderboard_period(period):
     entries = []
     users = store.get_all_users()
     for user in users:
-
-        # TODO
-        # get rid of this by storing frist_date into redis
-        ###################################################
+        
         access_token = user['access_token']
-        profile = moves.user_profile(access_token=access_token)
-        first_date = profile['profile']['firstDate']
-        ###################################################
+        first_date   = user['first_date']
 
         # validate period for user
         if utils.validate_period(period, first_date) is False:
