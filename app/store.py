@@ -8,6 +8,7 @@ class Store():
     
     def __init__(self, redis_url=redis_url_local):
         self.redis = redis.from_url(redis_url)
+        self.pipe  = self.redis.pipeline()
 
 
     def set_user(self, user_id, access_token, refresh_token, first_name, last_name, email_address, first_date):
@@ -35,7 +36,8 @@ class Store():
         users = []
         rkeys = self.redis.keys('user:*')
         for rkey in rkeys:
-            user = self.redis.hgetall(rkey)
+            self.pipe.hgetall(rkey)
+        for user in self.pipe.execute():
             users.append(user)
         return users
 
@@ -48,10 +50,11 @@ class Store():
         EXPIRE leaderboard:[period] timeout
         '''
         for entry in entries:
-            self.redis.hmset( 'leaderboard:%s:%s' % (period, entry.user_id), entry.__dict__)
-            self.redis.expire('leaderboard:%s:%s' % (period, entry.user_id), timeout)
-            self.redis.rpush( 'leaderboard:%s' % period,  'leaderboard:%s:%s' % (period, entry.user_id) )
-        return self.redis.expire('leaderboard:%s' % period, timeout)
+            self.pipe.hmset( 'leaderboard:%s:%s' % (period, entry.user_id), entry.__dict__)
+            self.pipe.expire('leaderboard:%s:%s' % (period, entry.user_id), timeout)
+            self.pipe.rpush( 'leaderboard:%s' % period,  'leaderboard:%s:%s' % (period, entry.user_id) )
+        self.pipe.expire('leaderboard:%s' % period, timeout)
+        return self.pipe.execute()
 
 
     def get_leaderboard(self, period):
@@ -64,7 +67,8 @@ class Store():
         if self.redis.exists('leaderboard:%s' % period):
             elements = self.redis.lrange('leaderboard:%s' % period, 0, -1)
             for e in elements:
-                entry = self.redis.hgetall(e)
+                self.pipe.hgetall(e)
+            for entry in self.pipe.execute():
                 entries.append(entry)
         return entries
         
