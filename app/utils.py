@@ -1,7 +1,6 @@
 import re
 import time
 import calendar
-import json
 from datetime import date, datetime, timedelta
 from isoweek import Week
 from flask import url_for
@@ -251,6 +250,47 @@ def validate_period(period, first_date):
     return False
 
 
+def period_to_dates(period):
+    '''
+    return a list of dates from period
+    '''
+    dates = []
+    today = datetime.now().strftime('%Y%m%d')
+
+    if type_of_period(period) == 'day':
+        if period <= today:
+            dates.append(period)
+    
+    # Week yyyy-Www
+    elif type_of_period(period) == 'week':
+        week = Week.fromstring(period)
+        alldates = []
+        monday    = str(week.monday()).replace('-', '')
+        tuesday   = str(week.tuesday()).replace('-', '')
+        wednesday = str(week.wednesday()).replace('-', '')
+        thursday  = str(week.thursday()).replace('-', '')
+        friday    = str(week.friday()).replace('-', '')
+        saturday  = str(week.saturday()).replace('-', '')
+        sunday    = str(week.sunday()).replace('-', '')
+        alldates.append(monday, tuesday, wednesday, thursday, friday, saturday, sunday)
+
+        for dt in alldates:
+            if dt <= today:
+                dates.append(dt)
+    
+    # Month yyyyMM
+    elif type_of_period(period) == 'month':
+        year  = int(period[0:4])
+        month = int(period[4:6])
+        lastday = calendar.monthrange(year, month)[1]
+        for day in range(1, lastday+1):
+            dt = date(year, month, day)
+            dt_yyyymmdd = dt.strftime('%Y%m%d')
+            if dt_yyyymmdd <= today:
+                dates.append(dt_yyyymmdd)
+    return dates
+
+
 def type_of_period(period):
     '''
     determine the type of a period.
@@ -328,7 +368,6 @@ def page_urls(period):
         prevweek = thisweek -1
         page['prev_url'] = url_for('views.leaderboard_period', period=prevweek.isoformat()[:4] + '-' + prevweek.isoformat()[4:])
         # prev_text = 'Week ' + str(prevweek.week) + ', ' + str(prevweek.year)
-        # return {'next_url': next_url, 'next_text': next_text, 'prev_url': prev_url, 'prev_text': prev_text} 
 
     elif type_of_period(period) == 'month':
 
