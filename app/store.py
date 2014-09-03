@@ -40,7 +40,7 @@ class Store():
         '''
         users = []
         keys = ['user_id', 'access_token', 'refresh_token', 'first_name', 'last_name', 'email_address', 'first_date']
-        rkeys = self.redis.keys('*');
+        rkeys = self.redis.keys('user:*')
         for rkey in rkeys:
             values = self.redis.hmget(rkey, keys)
             user = dict(zip(keys, values))
