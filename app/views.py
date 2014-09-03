@@ -1,12 +1,8 @@
 # TODO
-# - leaderboard:[period] name miles duration speed rate trips inbound outbound new_user
 # - background thread query 120 users per minute (rate limit: 120 requests per minute / 4000 requests per hour)
 # - use refresh token when access token is expired
 # - admin select from to dates dump to csv (first colume is people)
 # - 1st 2nd 3rd Prizes
-# ##############################################
-# - reduce use of moves api (0.5s per request)
-# - reduce use of redis api (0.1s per operation)
 
 import os
 import json
@@ -129,40 +125,55 @@ def leaderboard_period(period):
     '''
     Show user the daily leaderboard, no login is required
     '''
-    
+
     # try finding cache in Redis first
     entries = store.get_leaderboard(period)
     
-    # request Moves API if Redis returns empty and cache not found
+    # if Redis returns empty and cache not found
     if not entries:
-        users = store.get_all_users()
-        for user in users:
 
-            access_token = user['access_token']
-            first_date   = user['first_date']
+        # form leaderboard from Moves API 
+        entries = get_leaderboard_moves(period)
 
-            # validate period for user
-            if utils.validate_period(period, first_date) is False:
-                continue
-
-            # Moves: GET /user/storyline/daily (day/week/month)
-            storyline = moves.user_storyline_daily(period, trackPoints={'false'}, access_token=access_token)
-
-            # sum all trips of the period (day/week/month) for each user
-            summary = Summary.fromstoryline(storyline, user, first_date)
-            entry = summary.format()
-            entries.append(entry)
-
-        # cache leaderboard into Redis
-        store.set_leaderboard(period, entries)
+        # cache leaderboard for 30min into Redis
+        store.set_leaderboard(period, entries, timeout=1800)
 
     # build up previous and next links
     urls = utils.page_urls(period)
     return render_template('leaderboard.html', entries=entries, urls=urls)
 
 
+def get_leaderboard_moves(period):
+    '''
+    return leaderboard entries for period from Moves storyline API
+    Moves: GET /user/storyline/daily (period)
+    '''
+    entries = []
+    users = store.get_all_users()
+
+    for user in users:
+
+        access_token = user['access_token']
+        first_date   = user['first_date']
+
+        # validate period for user
+        if utils.validate_period(period, first_date) is False:
+            continue
+
+        # Moves: GET /user/storyline/daily (day/week/month)
+        storyline = moves.user_storyline_daily(period, trackPoints={'false'}, access_token=access_token)
+
+        # sum all trips of the period (day/week/month) for each user
+        summary = Summary.fromstoryline(storyline, user, first_date)
+        entry = summary.format()
+        entries.append(entry)
+    
+    return entries
+
+
 def validate_admin(username, password):
     return username == 'wkcycle' and password == 'supermegabonus'
+
 
 def admin_auth(f):
     @wraps(f)
