@@ -56,16 +56,16 @@
             {% for entry in entries %}
             <tr class="items">
                 <td>
-                {% if entry.newuser %} <img src="../static/assets/icon-new-user.gif" /> {% endif %} 
+                {% if entry.new_user == true or entry.new_user == 'True' %} <img src="../static/assets/icon-new-user.gif" /> {% endif %} 
                 {{ entry.name }} 
                 </td>
-                <td>{{ entry.distance }} </td>
-                <td>{{ entry.duration }} </td>
+                <td>{{ entry.miles }} </td>
+                <td>{{ entry.duration_str }} </td>
                 <td>{{ entry.speed }} mph</td>
                 <td>{{ entry.rate }}%</td>
-                <td>{{ entry.nCommutes }}</td>
-                <td>{{ entry.toWork }}</td>
-                <td>{{ entry.fromWork }}</td>
+                <td>{{ entry.trips }}</td>
+                <td>{{ entry.inbound }}</td>
+                <td>{{ entry.outbound }}</td>
             </tr>
             {% endfor %}
             </tbody>

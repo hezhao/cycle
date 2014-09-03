@@ -1,12 +1,10 @@
 # TODO
-# - admin select from to dates dump to csv (first colume is people)
+# - leaderboard:[period] name miles duration speed rate trips inbound outbound new_user
+# - background thread query 120 users per minute (rate limit: 120 requests per minute / 4000 requests per hour)
 # - use refresh token when access token is expired
+# - admin select from to dates dump to csv (first colume is people)
 # - 1st 2nd 3rd Prizes
-# - redis SET key value EX 3600
 # ##############################################
-# - save user['profile']['first_date'] to redis
-# - save all leaderboard entries into one data structure in redis
-# - read leaderboard entries from redis
 # - reduce use of moves api (0.5s per request)
 # - reduce use of redis api (0.1s per operation)
 
@@ -19,7 +17,7 @@ from functools import wraps
 from user_agents import parse
 from moves import MovesClient
 import utils
-from entry import LeaderboardEntry
+from summary import Summary
 
 
 # config vars
@@ -104,20 +102,20 @@ def home():
     return render_template('home.html', first_name=session['first_name'])
 
 
-# @views.route('/storyline/<yyyyMMdd>')
-# def storyline(yyyyMMdd):
-#     info = moves.user_storyline_daily(yyyyMMdd, trackPoints={'false'}, access_token='access_token')
-#     print info[0]['date']
-#     segments = info[0]['segments']
-#     # print json.dumps(segments, indent=2)
-#     res = ''
-#     for segment in segments:
-#         if segment['type'] == 'place':
-#             res = utils.place(segment, res)
-#         elif segment['type'] == 'move':
-#             res = utils.move(segment, res)
-#         res += '<hr>'
-#     return res
+@views.route('/storyline/<yyyyMMdd>')
+def storyline(yyyyMMdd):
+    info = moves.user_storyline_daily(yyyyMMdd, trackPoints={'false'}, access_token='access_token')
+    print info[0]['date']
+    segments = info[0]['segments']
+    # print json.dumps(segments, indent=2)
+    res = ''
+    for segment in segments:
+        if segment['type'] == 'place':
+            res = utils.place(segment, res)
+        elif segment['type'] == 'move':
+            res = utils.move(segment, res)
+        res += '<hr>'
+    return res
 
 
 @views.route('/leaderboard')
@@ -131,23 +129,32 @@ def leaderboard_period(period):
     '''
     Show user the daily leaderboard, no login is required
     '''
-    entries = []
-    users = store.get_all_users()
-    for user in users:
-        
-        access_token = user['access_token']
-        first_date   = user['first_date']
+    
+    # try finding cache in Redis first
+    entries = store.get_leaderboard(period)
+    
+    # request Moves API if Redis returns empty and cache not found
+    if not entries:
+        users = store.get_all_users()
+        for user in users:
 
-        # validate period for user
-        if utils.validate_period(period, first_date) is False:
-            continue
+            access_token = user['access_token']
+            first_date   = user['first_date']
 
-        # get user info for the period (day/week/month)
-        storyline = moves.user_storyline_daily(period, trackPoints={'false'}, access_token=access_token)
+            # validate period for user
+            if utils.validate_period(period, first_date) is False:
+                continue
 
-        # sum all trips of the peridod (day/week/month) for each user
-        leaderboard_entry = LeaderboardEntry(user, first_date, storyline)
-        entries.append(leaderboard_entry)
+            # Moves: GET /user/storyline/daily (day/week/month)
+            storyline = moves.user_storyline_daily(period, trackPoints={'false'}, access_token=access_token)
+
+            # sum all trips of the period (day/week/month) for each user
+            summary = Summary.fromstoryline(storyline, user, first_date)
+            entry = summary.format()
+            entries.append(entry)
+
+        # cache leaderboard into Redis
+        store.set_leaderboard(period, entries)
 
     # build up previous and next links
     urls = utils.page_urls(period)
@@ -176,12 +183,4 @@ def admin():
     '''
     Export all user data of selected day range to csv, login is required
     '''
-    print 'admin'
-    users = store.get_all_users()
-    for user in users:
-        access_token = user['access_token']
-        print user['user_id'], user['first_name'], user['last_name'], user['email_address']
-        
-        # create download link to csv
-        # is_new_user, rate, days_worked, #commutes, distance, duration
     return render_template('admin.html')
