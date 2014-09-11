@@ -1,6 +1,7 @@
 # TODO
-# - background thread query 120 users per minute (rate limit: 120 requests per minute / 4000 requests per hour)
 # - use refresh token when access token is expired
+# - delete user in Redis if user revoked Moves app
+# - background thread query 120 users per minute (rate limit: 120 requests per minute / 4000 requests per hour)
 # - admin select from to dates dump to csv (first colume is people)
 # - 1st 2nd 3rd Prizes
 
