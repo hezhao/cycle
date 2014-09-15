@@ -8,18 +8,20 @@ class MovesAPIError(Exception):
     """Raised if the Moves API returns an error."""
     pass
 
+
 class MovesAPINotModifed(Exception):
     """Raised if the document requested is unmodified. Need the use of etag header"""
     pass
 
+
 class MovesClient(object):
+
     """OAuth client for the Moves API"""
     api_url = "https://api.moves-app.com/api/1.1"
     app_auth_url = "moves://app/authorize"
     web_auth_uri = "https://api.moves-app.com/oauth/v1/authorize"
     token_url = "https://api.moves-app.com/oauth/v1/access_token"
     tokeninfo_url = "https://api.moves-app.com/oauth/v1/tokeninfo"
-    
     
     
     def __init__(self, client_id=None, client_secret=None,
@@ -30,11 +32,13 @@ class MovesClient(object):
         self.access_token = access_token
         self._last_headers = None
 
+  
     def parse_response(self, response):
         """Parse JSON API responses."""
 
         return json.loads(response.text)
 
+ 
     def build_oauth_url(self, redirect_uri=None, use_app=False, scope="activity location"):
         params = {
             'client_id': self.client_id,
@@ -51,13 +55,15 @@ class MovesClient(object):
         self.auth_url = self.app_auth_url if use_app else self.web_auth_uri
         return "%s?%s" % (self.auth_url, encoded)
 
-    def get_oauth_token(self, code, **kwargs):
+ 
+    def get_oauth_token(self, **kwargs):
 
         params = {
             'client_id': self.client_id,
             'client_secret': self.client_secret,
-            'code': code,
-            'grant_type': kwargs.get('grant_type', 'authorization_code')
+            'code': kwargs.get('code'),
+            'refresh_token': kwargs.get('refresh_token'),
+            'grant_type': kwargs.get('grant_type')
         }
 
         if 'redirect_uri' in kwargs:
@@ -68,8 +74,9 @@ class MovesClient(object):
             self.access_token = response['access_token']
             return response
         except:
-            error = "<%(error)s>: %(error_description)s" % response
+            error = "<%(error)s>: %(error)s" % response
             raise MovesAPIError(error)
+
 
     def tokeninfo(self, access_token):
         
@@ -79,9 +86,10 @@ class MovesClient(object):
         response = requests.get(self.tokeninfo_url, params=params)
         response = json.loads(response.content)
         try:
+            self.expires_in = response['expires_in']
             return response
         except:
-            error = "<%(error)s>: %(error_description)s" % response
+            error = "<%(error)s>: %(error)s" % response
             raise MovesAPIError(error)
 
 
@@ -120,18 +128,22 @@ class MovesClient(object):
         self._last_headers = resp.headers
         return resp
 
+
     def get(self, path, **params):
         return self.parse_response(
             self.api(path, 'GET', params=params))
+
 
     def post(self, path, **data):
         return self.parse_response(
             self.api(path, 'POST', data=data))
 
+
     def set_first_date(self):
         if not self.first_date:
             response = self.user_profile()
             self.first_date = response['profile']['firstDate']
+
 
     def __getattr__(self, name):
         '''\
@@ -162,6 +174,7 @@ and then parses the response.
         # Cache it to avoid additional calls to __getattr__.
         setattr(self, name, retval)
         return retval
+
 
 # Give Access to last attribute
 _move_client_status = ['etag', 'x-ratelimit-hourlimit', 'x-ratelimit-hourremaining',
