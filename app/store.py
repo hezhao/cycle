@@ -28,6 +28,18 @@ class Store():
 
         return self.redis.hmset('user:%d' % user_id, m)
 
+
+    def delete_user(self, user_id):
+        '''
+        DEL user:[user_id]
+        '''
+        user_key = 'user:' + user_id
+        rkeys    = self.redis.keys('user:*')
+        for rkey in rkeys:
+            if rkey == user_key:
+                self.redis.delete(rkey)
+                break
+
     
     def get_all_users(self):
         '''
