@@ -1,6 +1,7 @@
 # TODO
-# - use refresh token when access token is expired
-# - delete user in Redis if user revoked Moves app
+# - redis cloud daily backup
+# - making sure wk.com user
+# - Parse SDK user profile
 # - background thread query 120 users per minute (rate limit: 120 requests per minute / 4000 requests per hour)
 # - admin select from to dates dump to csv (first colume is people)
 # - 1st 2nd 3rd Prizes
@@ -12,7 +13,7 @@ from datetime import datetime
 from flask import Blueprint, url_for, request, Response, session, redirect, render_template
 from functools import wraps
 from user_agents import parse
-from moves import MovesClient
+from moves import MovesClient, MovesAPIError
 import utils
 from summary import Summary
 
@@ -69,11 +70,11 @@ def oauth_return():
         return error
     oauth_return_url = url_for('.oauth_return', _external=True)
     code = request.args.get("code")
-    response = moves.get_oauth_token(code, redirect_uri=oauth_return_url)
+    response = moves.get_oauth_token(grant_type='authorization_code', code=code, redirect_uri=oauth_return_url)
     
     # store access_token and user_id in session
     session['access_token'] = response['access_token']
-    session['user_id'] = response['user_id']
+    session['user_id']      = response['user_id']
 
     # find first_date from GET /user/profile
     profile = moves.user_profile(access_token=session['access_token'])
@@ -144,6 +145,38 @@ def leaderboard_period(period):
     return render_template('leaderboard.html', entries=entries, urls=urls)
 
 
+def validate_access_token(user, access_token):
+    '''
+    return True if access token is valid.
+    return True and set new access token if expired.
+    return False if user revoked app.
+    '''
+    # try getting access token info
+    try:
+        # Moves: GET /oauth/v1/tokeninfo
+        moves.tokeninfo(access_token)
+        return True
+
+    # current access token is invalid
+    except MovesAPIError:
+
+        # try getting access token in case expired
+        refresh_token = user['refresh_token']
+        try:
+            # user token expired, set new access token and refresh token
+            response = moves.get_oauth_token(grant_type='refresh_token', refresh_token=refresh_token)
+            new_access_token  = response['access_token']
+            new_refresh_token = response['refresh_token']
+            store.set_user( user['user_id'], new_access_token, new_refresh_token, 
+                            user['first_name'], user['last_name'], user['email_address'], user['first_date'])
+            return True
+
+        # user has revoked app, remove user in Redis
+        except MovesAPIError:
+            store.delete_user(user['user_id'])
+            return False
+
+
 def get_leaderboard_moves(period):
     '''
     return leaderboard entries for period from Moves storyline API
@@ -156,6 +189,10 @@ def get_leaderboard_moves(period):
 
         access_token = user['access_token']
         first_date   = user['first_date']
+
+        # validate user access_token
+        if validate_access_token(user, access_token) is False:
+            continue
 
         # validate period for user
         if utils.validate_period(period, first_date) is False:
