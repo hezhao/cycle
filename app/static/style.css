@@ -1,3 +1,8 @@
+html {
+    position: relative;
+    min-height: 100%;
+}
+
 body {
     font-family: "Helvetica Neue",Helvetica,Arial,"Lucida Grande",sans-serif;
     color: #000000;
@@ -39,25 +44,12 @@ code {
 
 #content {
     padding: 20px;
-    zoom: 1;
 }
 
-
-#body{
-    margin: 0 15px 0 15px;
-}
-
-#container{
-    margin: 0px;
-}
-
-p.footer{
-    text-align: right;
-    font-size: 11px;
-    border-top: 1px solid #D0D0D0;
-    line-height: 32px;
-    padding: 0 10px 0 10px;
-    margin: 20px 0 0 0;
+#container {
+    margin: 0 auto;
+    position: relative;
+    min-height: 99%
 }
 
 div.nav {
