@@ -1,8 +1,6 @@
 # TODO
-# - redis cloud daily backup
-# - making sure wk.com user
 # - Parse SDK user profile
-# - background thread query 120 users per minute (rate limit: 120 requests per minute / 4000 requests per hour)
+# - background thread query 60 users per minute (2 queries per user, rate limit: 120 requests per minute / 4000 requests per hour)
 # - admin select from to dates dump to csv (first colume is people)
 # - 1st 2nd 3rd Prizes
 
@@ -48,7 +46,7 @@ def index_post():
     '''
     session['first_name']       = request.form['first_name']
     session['last_name']        = request.form['last_name']
-    session['email_address']    = request.form['email_address']
+    session['email_address']    = request.form['email_address'] + 'wk.com'
 
     # get user-agent 
     ua_string = request.headers.get('User-Agent')
