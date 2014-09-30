@@ -7,8 +7,6 @@
 
 import os
 import json
-import threading
-import Queue
 from store import Store
 from datetime import datetime
 from flask import Blueprint, url_for, request, Response, session, redirect, render_template
@@ -130,8 +128,7 @@ def leaderboard_period(period):
     '''
 
     # try finding cache in Redis first
-    entries = []
-    # entries = store.get_leaderboard(period)
+    entries = store.get_leaderboard(period)
     
     # query if Redis cache not found
     if not entries:
@@ -179,31 +176,6 @@ def validate_access_token(user, access_token):
             return False
 
 
-def query_leaderboard_moves_worker(user, period, q):
-
-    print user['first_name'], user['last_name']
-    access_token = user['access_token']
-    first_date   = user['first_date']
-
-    # validate user access_token
-    if validate_access_token(user, access_token) is False:
-        return
-
-    # validate period for user
-    if utils.validate_period(period, first_date) is False:
-        return
-
-    # Moves: GET /user/storyline/daily (day/week/month)
-    storyline = moves.user_storyline_daily(period, trackPoints={'false'}, access_token=access_token)
-    
-    # sum all trips of the period (day/week/month) for each user
-    summary = Summary.fromstoryline(storyline, user, first_date)
-    entry = summary.format()
-    q.put(entry)
-    print entry
-    q.task_done()
-
-
 def query_leaderboard_moves(period):
     '''
     return leaderboard entries for period from Moves storyline API
@@ -211,35 +183,28 @@ def query_leaderboard_moves(period):
     '''
     entries = []
     users = store.get_all_users()
-    q = Queue.Queue()
 
     for user in users:
 
-        # access_token = user['access_token']
-        # first_date   = user['first_date']
+        access_token = user['access_token']
+        first_date   = user['first_date']
 
-        # # validate user access_token
-        # if validate_access_token(user, access_token) is False:
-        #     continue
+        # validate user access_token
+        if validate_access_token(user, access_token) is False:
+            continue
 
-        # # validate period for user
-        # if utils.validate_period(period, first_date) is False:
-        #     continue
+        # validate period for user
+        if utils.validate_period(period, first_date) is False:
+            continue
 
-        # # Moves: GET /user/storyline/daily (day/week/month)
-        # storyline = moves.user_storyline_daily(period, trackPoints={'false'}, access_token=access_token)
+        # Moves: GET /user/storyline/daily (day/week/month)
+        storyline = moves.user_storyline_daily(period, trackPoints={'false'}, access_token=access_token)
 
-        # # sum all trips of the period (day/week/month) for each user
-        # summary = Summary.fromstoryline(storyline, user, first_date)
-        # entry = summary.format()
-        # entries.append(entry)
-
-        worker = threading.Thread(target=query_leaderboard_moves_worker, args=(user, period, q))
-        worker.setDaemon(True)
-        worker.start()
-        entries.append(q.get())
-
-    q.join()
+        # sum all trips of the period (day/week/month) for each user
+        summary = Summary.fromstoryline(storyline, user, first_date)
+        entry = summary.format()
+        entries.append(entry)
+    
     return entries
 
 
