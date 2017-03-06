@@ -7,7 +7,7 @@ class Store():
     redis_url_local = 'redis://localhost:6379'
     
     def __init__(self, redis_url=redis_url_local):
-        self.redis = redis.from_url(redis_url)
+        self.redis = redis.from_url(redis_url, charset="utf-8", decode_responses=True)
         self.pipe  = self.redis.pipeline()
 
 

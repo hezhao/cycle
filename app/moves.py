@@ -84,7 +84,7 @@ class MovesClient(object):
             'access_token': access_token
         }
         response = requests.get(self.tokeninfo_url, params=params)
-        response = json.loads(response.content)
+        response = response.json()
         try:
             self.expires_in = response['expires_in']
             return response
@@ -158,18 +158,18 @@ and then parses the response.
             'Accesses the /%s API endpoints.'
             path = list(path)
             path.insert(0, base_path)
-            return self.parse_response(
-                self.api('/'.join(path), 'GET', params=params)
-                )
+            r = self.api('/'.join(path), 'GET', params=params)
+            print(r)
+            return self.parse_response(r)
 
         # Clone a new method with the correct name and doc string.
         retval = types.FunctionType(
-            closure.func_code,
-            closure.func_globals,
+            closure.__code__,
+            closure.__globals__,
             name,
-            closure.func_defaults,
-            closure.func_closure)
-        retval.func_doc =  closure.func_doc % base_path
+            closure.__defaults__,
+            closure.__closure__)
+        retval.__doc__ =  closure.__doc__ % base_path
 
         # Cache it to avoid additional calls to __getattr__.
         setattr(self, name, retval)

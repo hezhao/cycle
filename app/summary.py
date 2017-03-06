@@ -1,6 +1,6 @@
 import time
-import utils
-from cycling import Cycling as Cycling
+from app import utils
+from app.cycling import Cycling as Cycling
 
 class Summary():
     '''
@@ -37,9 +37,7 @@ class Summary():
             
         # invalid
         else:
-            print 'invalid Summary class constructor.'
             raise BaseException
-
 
     @classmethod
     def fromstoryline(cls, storyline, user, first_date):
@@ -47,7 +45,6 @@ class Summary():
         initilize Summary class from response of Moves storyline API
         '''
         return cls(storyline, user, first_date)
-
 
     def format(self):
         '''
@@ -77,7 +74,6 @@ class Summary():
             self.rate = int(float(self.commute_days) / self.work_days * 100)
 
         return self
-
 
     def summary_storyline(self, storyline, user, first_date):
         '''
@@ -124,5 +120,3 @@ class Summary():
                 self.new_user = True
 
         return self
-
-

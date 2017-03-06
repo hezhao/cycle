@@ -4,7 +4,8 @@ import calendar
 from datetime import date, datetime, timedelta
 from isoweek import Week
 from flask import url_for
-from cycling import Cycling
+from app.cycling import Cycling
+
 
 def segment_start_end(segment, res):
     res += 'Start Time: %s<br />' % segment['startTime']
@@ -29,7 +30,6 @@ def activities_block(activity, res):
     elif activity['group'] == 'cycling':
         res += 'Cycling: %d meters<br />' % activity['distance']
     elif activity['group'] == 'transport':
-        print 'transport'
         res += 'Transport: %d meters<br />' % activity['distance']
 
     if 'calories' in activity:
@@ -387,7 +387,7 @@ def page_urls(period):
 
 def add_months(sourcedate, months):
     month = sourcedate.month - 1 + months
-    year = sourcedate.year + month / 12
+    year = sourcedate.year + int(month / 12)
     # Note: python % results in a remainder 0<=r<divisor
     #       so the resulting month is alwasy greater than 0
     #       even if the input month is smaller than 0

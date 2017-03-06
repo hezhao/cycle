@@ -7,14 +7,14 @@
 
 import os
 import json
-from store import Store
+from app.store import Store
 from datetime import datetime
 from flask import Blueprint, url_for, request, Response, session, redirect, render_template
 from functools import wraps
 from user_agents import parse
-from moves import MovesClient, MovesAPIError
-import utils
-from summary import Summary
+from app.moves import MovesClient, MovesAPIError
+from app import utils
+from app.summary import Summary
 
 
 # config vars
@@ -102,9 +102,7 @@ def home():
 @views.route('/storyline/<yyyyMMdd>')
 def storyline(yyyyMMdd):
     info = moves.user_storyline_daily(yyyyMMdd, trackPoints={'false'}, access_token='access_token')
-    print info[0]['date']
     segments = info[0]['segments']
-    # print json.dumps(segments, indent=2)
     res = ''
     for segment in segments:
         if segment['type'] == 'place':
@@ -204,7 +202,7 @@ def query_leaderboard_moves(period):
         summary = Summary.fromstoryline(storyline, user, first_date)
         entry = summary.format()
         entries.append(entry)
-    
+
     return entries
 
 
