@@ -1,7 +1,8 @@
 wkcycle
 =======
 
-Bike Commute Challenge with Moves app
+Bike Commute Challenge with Moves app http://wkcycle.herokuapp.com
 
 ### Debug on Local Machine
-	$ foreman run python run.py
+	$ python run.py
+    $ open http://0.0.0.0:5000
