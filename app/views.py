@@ -47,7 +47,7 @@ def index_post():
     '''
     session['first_name']       = request.form['first_name']
     session['last_name']        = request.form['last_name']
-    session['email_address']    = request.form['email_address'] + '@wk.com'
+    session['email_address']    = request.form['email_address']
 
     # get user-agent 
     ua_string = request.headers.get('User-Agent')

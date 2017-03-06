@@ -51,7 +51,7 @@ class MovesClient(object):
             params['redirect_uri'] = redirect_uri
 
         # Moves hates +s for spaces, so use %20 instead.
-        encoded = urllib.urlencode(params).replace('+', '%20')
+        encoded = urllib.parse.urlencode(params).replace('+', '%20')
         self.auth_url = self.app_auth_url if use_app else self.web_auth_uri
         return "%s?%s" % (self.auth_url, encoded)
 
