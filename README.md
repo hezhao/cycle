@@ -1,7 +1,7 @@
 wkcycle
 =======
 
-Bike Commute Challenge with [Moves](https://www.moves-app.com/) app, it logs your trips, and calcualtes your average daily, weekly, and monthly bike commute speed betwen your home and work, and compare your trips with other cyclists globally.
+Bike Commute Challenge with [Moves](https://www.moves-app.com/) app, it logs your trips, and calculates your average daily, weekly, and monthly bike commute speed betwen your home and work, and compare your trips with other cyclists globally.
 
 ### Getting Started
 1. Apply for a [Moves API](https://dev.moves-app.com/) key
