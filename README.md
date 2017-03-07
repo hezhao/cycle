@@ -7,7 +7,7 @@ Leveraging [Moves](https://www.moves-app.com/) app data, Cycle logs your trips, 
 1. Apply for a [Moves API](https://dev.moves-app.com/) key
 2. Create a redis database (e.g. You can create one for free at [redistogo](http://redistogo.com/))
 3. Put in `MOVES_CLIENT_ID`, `MOVES_CLIENT_SECRET`, `REDIS_URL`, `FLASK_APP_SECRET` in `env`
-4. `$ source env`, or if you use [Autoenv](https://github.com/kennethreitz/autoenv) simply `$ cp env .env`
+4. `$ source env`, or if you use [Autoenv](https://github.com/kennethreitz/autoenv) simply `$ mv env .env`
 
 ### Debug on Local Machine
 	$ python run.py

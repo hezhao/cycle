@@ -13,7 +13,7 @@ body {
 }
 
 a {
-    color: #66cc66;
+    color: #05eab7;
     background-color: transparent;
     font-weight: normal;
     text-decoration: none;
@@ -127,9 +127,8 @@ td:last-child {
     border-right: none;
 }
 
-tr:nth-child(even) {background: #f3f3f3}
+tr:nth-child(even) {background: #e6fdee}
 tr:nth-child(odd) {background: #whitesmoke}
-
 
 /* tablesorter */
 
@@ -148,15 +147,15 @@ th.header {
     background-position: center right;
 }
 
-
 /* form */
-form label{
+
+form label {
     font-size: 16px;
     display: block;
     margin-bottom: 5px;
 }
 
-form input{
+form input {
     border: 1px solid #aaa;
     font-size: 14px;
     padding: 5px;
@@ -166,8 +165,8 @@ form input{
     -webkit-appearance: none;
 }
 
-form input[type=submit]{
-    background: #66cc66;
+form input[type=submit] {
+    background: #05eab7;
     color: #fff;
     display: inline-block;
     padding: 0 20px;
