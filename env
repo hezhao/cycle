@@ -1,0 +1,5 @@
+export MOVES_CLIENT_ID=<moves_client_id_here>
+export MOVES_CLIENT_SECRET=<moves_client_secret_here>
+export REDIS_URL=<redis_url_here>
+export FLASK_APP_SECRET=<flask_app_secret_here>
+export TZ="America/Los_Angeles"

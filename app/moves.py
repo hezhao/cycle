@@ -159,7 +159,6 @@ and then parses the response.
             path = list(path)
             path.insert(0, base_path)
             r = self.api('/'.join(path), 'GET', params=params)
-            print(r)
             return self.parse_response(r)
 
         # Clone a new method with the correct name and doc string.

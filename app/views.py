@@ -18,9 +18,9 @@ from app.summary import Summary
 
 
 # config vars
-client_id       = os.environ['CLIENT_ID']
-client_secret   = os.environ['CLIENT_SECRET']
-redis_url       = os.environ['REDISTOGO_URL']
+client_id       = os.environ['MOVES_CLIENT_ID']
+client_secret   = os.environ['MOVES_CLIENT_SECRET']
+redis_url       = os.environ['REDIS_URL']
 
 # class instances
 moves           = MovesClient(client_id, client_secret)
