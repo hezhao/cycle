@@ -1,7 +1,7 @@
-wkcycle
+Cycle
 =======
 
-Bike Commute Challenge with [Moves](https://www.moves-app.com/) app, it logs your trips, and calculates your average daily, weekly, and monthly bike commute speed betwen your home and work, and compare your trips with other cyclists globally.
+Leveraging [Moves](https://www.moves-app.com/) app data, Cycle logs your trips, and calculates your average daily, weekly, and monthly bike commute speed between your home and work, and compare your trips with other cyclists globally.
 
 ### Getting Started
 1. Apply for a [Moves API](https://dev.moves-app.com/) key
@@ -15,7 +15,7 @@ Bike Commute Challenge with [Moves](https://www.moves-app.com/) app, it logs you
 
 ### Usage
 
-1. Go to http://wkcycle.herokuapp.com
+1. Go to https://cyclewithmoves.herokuapp.com/
 2. Register with a valid email addresss
 3. Connect with Moves app
 4. Label your home and work, if necessary also label bike rides between them (usually Moves app is smart enought to automatically label this)
