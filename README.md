@@ -1,9 +1,7 @@
-Cycle
+![Cycle logo](https://github.com/hezhao/cycle/raw/master/app/static/assets/logo1-128px.png)
 =======
 
-![Cycle logo](https://github.com/hezhao/cycle/raw/master/app/static/assets/logo1-128px.png)
-
-Leveraging [Moves](https://www.moves-app.com/) app data, Cycle logs your trips, and calculates your average daily, weekly, and monthly bike commute speed between your home and work, and compare your trips with other cyclists globally.
+Leveraging [Moves](https://www.moves-app.com/) app data, **Cycle** logs your trips, and calculates your average daily, weekly, and monthly bike commute speed between your home and work, and compare your trips with other cyclists globally.
 
 ### Getting Started
 1. Apply for a [Moves API](https://dev.moves-app.com/) key
