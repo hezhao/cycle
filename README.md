@@ -1,6 +1,8 @@
 ![Cycle logo](https://github.com/hezhao/cycle/raw/master/app/static/assets/logo1-128px.png)
 =======
 
+[![Build Status](https://travis-ci.org/travis-ci/travis-web.svg?branch=master)](https://travis-ci.org/travis-ci/travis-web)
+
 Leveraging [Moves](https://www.moves-app.com/) app data, **Cycle** logs your trips, and calculates your average daily, weekly, and monthly bike commute speed between your home and work, and compare your trips with other cyclists globally.
 
 ### Getting Started
